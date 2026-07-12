@@ -1,14 +1,10 @@
 #!/bin/bash
-#========================================================================================================================
-# https://github.com/ophub/amlogic-s9xxx-openwrt
-# Description: Automatically Build OpenWrt
-# Function: Diy script (Before Update feeds, Modify the default IP, hostname, theme, add/remove software packages, etc.)
-# Source code repository: https://github.com/coolsnowwolf/lede / Branch: master
-#========================================================================================================================
-
-# Add a feed source
-# sed -i '$a src-git lienol https://github.com/Lienol/openwrt-package' feeds.conf.default
-
-# other
-# rm -rf package/lean/{samba4,luci-app-samba4,luci-app-ttyd}
-
+# 添加 OpenClash 包
+git clone --depth 1 https://github.com/vernesong/OpenClash /tmp/openclash
+cp -rf /tmp/openclash/luci-app-openclash package/
+rm -rf /tmp/openclash
+# 添加 iStore 包
+git clone --depth 1 https://github.com/linkease/istore /tmp/istore
+cp -rf /tmp/istore/luci-app-store package/
+rm -rf /tmp/istore
+echo "diy-part1.sh 完成"
