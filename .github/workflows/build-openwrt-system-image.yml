@@ -70,7 +70,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
       - name: Checkout
@@ -87,7 +87,18 @@ jobs:
           sudo swapoff -a && sudo rm -f /swapfile /mnt/swapfile
           sudo -E apt-get -y update
           sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-          sudo -E apt-get -y install $(curl -fsSL https://is.gd/depend_ubuntu2204_openwrt)
+          sudo -E apt-get -y install --no-install-recommends \
+            ack antlr3 asciidoc autoconf automake autopoint binutils bison \
+            build-essential bzip2 ccache cmake cpio curl device-tree-compiler \
+            fastjar flex gawk gettext gcc-multilib g++-multilib git gperf \
+            haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev \
+            libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev \
+            libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev \
+            libssl-dev libtool lrzsz mkisofs msmtp nano ninja-build \
+            p7zip p7zip-full patch pkgconf python3 python3-pyelftools \
+            python3-setuptools qemu-utils rsync scons squashfs-tools \
+            subversion swig texinfo uglifyjs upx-ucl unzip vim wget \
+            xmlto xxd zlib1g-dev
           sudo -E systemctl daemon-reload
           sudo -E apt-get -y autoremove --purge && sudo -E apt-get clean
           sudo sed -i '/NVM_DIR/d;/skel/d' /root/{.bashrc,.profile}
@@ -98,7 +109,7 @@ jobs:
       - name: Clone source [ ${{ inputs.source_branch }} ]
         id: codes
         working-directory: /mnt/workdir
-        if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
+        if: steps.init.outputs.status == 'success' && !cancelled()
         run: |
           declare -A REPO_MAP=(
             ["lede_master"]="https://github.com/coolsnowwolf/lede master"
@@ -111,6 +122,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Load custom feeds
+        if: steps.codes.outputs.status == 'success' && !cancelled()
         run: |
           CONF_DIR="${GITHUB_WORKSPACE}/config/${{ inputs.source_branch }}"
           [[ -f "${CONF_DIR}/feeds.conf.default" ]] && cp -f "${CONF_DIR}/feeds.conf.default" openwrt/feeds.conf.default
@@ -118,9 +130,11 @@ jobs:
           cd openwrt && "${GITHUB_WORKSPACE}/${CONF_DIR}/diy-part1.sh"
 
       - name: Update and install feeds
+        if: steps.codes.outputs.status == 'success' && !cancelled()
         run: cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
 
       - name: Load config (inject OpenClash + Tailscale + iStore)
+        if: steps.codes.outputs.status == 'success' && !cancelled()
         run: |
           CONF_DIR="${GITHUB_WORKSPACE}/config/${{ inputs.source_branch }}"
           [[ -d "${CONF_DIR}/files" ]] && cp -rf "${CONF_DIR}/files" openwrt/files
@@ -131,6 +145,7 @@ jobs:
 
       - name: Download packages
         id: download
+        if: steps.codes.outputs.status == 'success' && !cancelled()
         run: |
           cd openwrt && make defconfig
           make download -j8
@@ -139,7 +154,7 @@ jobs:
 
       - name: Compile firmware
         id: compile
-        if: ${{ steps.download.outputs.status }} == 'success' && !cancelled()
+        if: steps.download.outputs.status == 'success' && !cancelled()
         run: |
           cd openwrt
           make -j$(($(nproc)+1)) || make -j1 || make -j1 V=s
@@ -148,7 +163,7 @@ jobs:
 
       - name: Upload rootfs to Release
         uses: ncipollo/release-action@main
-        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
+        if: steps.compile.outputs.status == 'success' && !cancelled()
         with:
           tag: ${{ steps.compile.outputs.build_tag }}
           artifacts: openwrt/bin/targets/*/*/*.tar.gz
@@ -157,7 +172,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Package firmware for Phicomm N1
-        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
+        if: steps.compile.outputs.status == 'success' && !cancelled()
         uses: ophub/amlogic-s9xxx-openwrt@main
         with:
           openwrt_path: openwrt/bin/targets/*/*/*.tar.gz
@@ -170,7 +185,7 @@ jobs:
 
       - name: Upload firmware to Release
         uses: ncipollo/release-action@main
-        if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+        if: env.PACKAGED_STATUS == 'success' && !cancelled()
         with:
           tag: openwrt_phicomm_n1_${{ env.PACKAGED_OUTPUTDATE }}
           artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
