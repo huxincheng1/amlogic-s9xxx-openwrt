@@ -127,7 +127,7 @@ jobs:
           CONF_DIR="${GITHUB_WORKSPACE}/config/${{ inputs.source_branch }}"
           [[ -f "${CONF_DIR}/feeds.conf.default" ]] && cp -f "${CONF_DIR}/feeds.conf.default" openwrt/feeds.conf.default
           chmod +x "${CONF_DIR}/diy-part1.sh"
-          cd openwrt && "${GITHUB_WORKSPACE}/${CONF_DIR}/diy-part1.sh"
+          cd openwrt && "${CONF_DIR}/diy-part1.sh"
 
       - name: Update and install feeds
         if: steps.codes.outputs.status == 'success' && !cancelled()
@@ -140,7 +140,7 @@ jobs:
           [[ -d "${CONF_DIR}/files" ]] && cp -rf "${CONF_DIR}/files" openwrt/files
           [[ -f "${CONF_DIR}/config" ]] && cp -f "${CONF_DIR}/config" openwrt/.config
           chmod +x "${CONF_DIR}/diy-part2.sh"
-          cd openwrt && "${GITHUB_WORKSPACE}/${CONF_DIR}/diy-part2.sh" \
+          cd openwrt && "${CONF_DIR}/diy-part2.sh" \
             "${{ inputs.openwrt_ip }}" "${{ inputs.enable_ccache }}"
 
       - name: Download packages
