@@ -93,11 +93,11 @@ jobs:
             flex gawk gettext gcc-multilib g++-multilib git gperf \
             haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev \
             libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev \
-            libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev \
+            libncurses-dev libncursesw5-dev libpython3-dev libreadline-dev \
             libssl-dev libtool lrzsz msmtp nano ninja-build \
             p7zip p7zip-full patch pkgconf python3 python3-pyelftools \
             python3-setuptools qemu-utils rsync scons squashfs-tools \
-            subversion swig texinfo unzip vim wget xmlto xxd zlib1g-dev
+            subversion swig texinfo unzip vim wget xmlto xxd zlib1g-dev || true
           sudo -E apt-get -y install antlr3  || true
           sudo -E apt-get -y install fastjar || true
           sudo -E apt-get -y install uglifyjs upx-ucl || sudo -E apt-get -y install nodejs upx || true
@@ -106,6 +106,8 @@ jobs:
           sudo -E apt-get -y autoremove --purge && sudo -E apt-get clean
           sudo sed -i '/NVM_DIR/d;/skel/d' /root/{.bashrc,.profile}
           sudo rm -rf ~/{.cargo,.dotnet,.rustup}
+          sudo mkdir -p /mnt/workdir
+          sudo chown runner:runner /mnt/workdir
           sudo timedatectl set-timezone "${TZ}"
           echo "status=success" >> ${GITHUB_OUTPUT}
 
