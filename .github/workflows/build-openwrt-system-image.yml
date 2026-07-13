@@ -169,7 +169,7 @@ jobs:
           artifacts: openwrt/bin/targets/*/*/*.tar.gz
           allowUpdates: true
           replacesArtifacts: true
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
 
       - name: Package firmware for Phicomm N1
         if: steps.compile.outputs.status == 'success' && !cancelled()
@@ -181,7 +181,7 @@ jobs:
           auto_kernel: ${{ inputs.auto_kernel }}
           kernel_usage: ${{ inputs.kernel_usage }}
           openwrt_size: ${{ inputs.openwrt_size }}
-          gh_token: ${{ secrets.GH_TOKEN }}
+          
 
       - name: Upload firmware to Release
         uses: ncipollo/release-action@main
@@ -190,7 +190,7 @@ jobs:
           tag: openwrt_phicomm_n1_${{ env.PACKAGED_OUTPUTDATE }}
           artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
           allowUpdates: true
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
           body: |
             ### OpenWrt Firmware - Phicomm N1 (Amlogic S905D)
             | Item | Value |
