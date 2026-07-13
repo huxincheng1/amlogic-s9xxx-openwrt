@@ -16,10 +16,10 @@ on:
       openwrt_board:
         description: "Target board"
         required: false
-        default: "phicomm-n1"
+        default: "s905d"
         type: choice
         options:
-          - phicomm-n1
+          - s905d
           - all
       openwrt_kernel:
         description: "Kernel version"
@@ -175,8 +175,6 @@ jobs:
       - name: Package firmware for Phicomm N1
         if: steps.compile.outputs.status == 'success' && !cancelled()
         uses: ophub/amlogic-s9xxx-openwrt@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         with:
           openwrt_path: openwrt/bin/targets/*/*/*.tar.gz
           openwrt_board: ${{ inputs.openwrt_board }}
@@ -186,6 +184,7 @@ jobs:
           kernel_usage: ${{ inputs.kernel_usage }}
           openwrt_size: ${{ inputs.openwrt_size }}
           openwrt_ip: ${{ inputs.openwrt_ip }}
+          gh_token: ${{ github.token }}
 
       - name: Upload firmware to Release
         uses: ncipollo/release-action@main
@@ -199,7 +198,7 @@ jobs:
             ### OpenWrt Firmware - Phicomm N1 (Amlogic S905D)
             | Item | Value |
             |---|---|
-            | Board | phicomm-n1 |
+            | Board | Phicomm N1 (s905d) |
             | SoC | Amlogic S905D |
             | Kernel | ${{ inputs.openwrt_kernel }} (${{ inputs.kernel_usage }}) |
             | Source | ${{ inputs.source_branch }} |
