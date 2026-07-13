@@ -175,6 +175,8 @@ jobs:
       - name: Package firmware for Phicomm N1
         if: steps.compile.outputs.status == 'success' && !cancelled()
         uses: ophub/amlogic-s9xxx-openwrt@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           openwrt_path: openwrt/bin/targets/*/*/*.tar.gz
           openwrt_board: ${{ inputs.openwrt_board }}
